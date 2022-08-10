@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import rishabh.example.whatsapp.encryption.Encrypt;
 
 public class ChatActivity extends AppCompatActivity {
     private String messageReceiverID, messageReceiverName, messageReceiverImage, messageSenderID;
@@ -93,12 +94,7 @@ public class ChatActivity extends AppCompatActivity {
         userName.setText(messageReceiverName);
         Picasso.get().load(messageReceiverImage).placeholder(R.drawable.profile_image).into(userImage);
 
-        SendMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                SendMessage();
-            }
-        });
+        SendMessageButton.setOnClickListener(view -> SendMessage());
 
         DisplayLastSeen();
 
@@ -382,6 +378,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void SendMessage() {
         String messageText = MessageInputText.getText().toString();
+        String encryptedMsg = Encrypt.encode(messageText);
 
         if (TextUtils.isEmpty(messageText)) {
             Toast.makeText(this, "Please type message...", Toast.LENGTH_SHORT).show();
@@ -395,7 +392,7 @@ public class ChatActivity extends AppCompatActivity {
             String messagePushID = userMessageKeyRef.getKey();
 
             Map messageTextBody = new HashMap();
-            messageTextBody.put("message", messageText);
+            messageTextBody.put("message", encryptedMsg);
             messageTextBody.put("type", "text");
             messageTextBody.put("from", messageSenderID);
             messageTextBody.put("to", messageReceiverID);

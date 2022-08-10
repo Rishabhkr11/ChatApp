@@ -1,26 +1,16 @@
 package rishabh.example.whatsapp;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -28,8 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.sdsmdg.tastytoast.TastyToast;
 
-public class LoginActivity extends AppCompatActivity
-{
+public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private ProgressDialog loadingBar;
@@ -52,112 +41,71 @@ public class LoginActivity extends AppCompatActivity
         InitializeFields();
 
 
-        NeedNewAccountLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                SendUserToRegisterActivity();
-            }
+        NeedNewAccountLink.setOnClickListener(view -> SendUserToRegisterActivity());
+
+        LoginButton.setOnClickListener(view -> AllowUserToLogin());
+
+        PhoneLoginButton.setOnClickListener(view -> {
+            Intent phoneLoginIntent = new Intent(LoginActivity.this, PhoneLoginActivity.class);
+            startActivity(phoneLoginIntent);
         });
 
-        LoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                AllowUserToLogin();
-            }
-        });
-
-        PhoneLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                Intent phoneLoginIntent = new Intent(LoginActivity.this, PhoneLoginActivity.class);
-                startActivity(phoneLoginIntent);
-            }
-        });
-
-        ForgetPasswordLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent resetPasswordLoginIntent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
-                startActivity(resetPasswordLoginIntent);
-            }
+        ForgetPasswordLink.setOnClickListener(v -> {
+            Intent resetPasswordLoginIntent = new Intent(LoginActivity.this, ResetPasswordActivity.class);
+            startActivity(resetPasswordLoginIntent);
         });
     }
 
     @Override
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
 
-        if (currentUser != null)
-        {
+        if (currentUser != null) {
             SendUserToMainActivity();
         }
     }
 
-    private void AllowUserToLogin()
-    {
-        String email = UserEmail.getText().toString();
+    private void AllowUserToLogin() {
+        String email = UserEmail.getText().toString().trim();
         String password = UserPassword.getText().toString();
 
-        if (TextUtils.isEmpty(email))
-        {
+        if (TextUtils.isEmpty(email)) {
             UserEmail.setError("Required");
             UserEmail.requestFocus();
-        }
-
-        else if (TextUtils.isEmpty(password))
-        {
+        } else if (TextUtils.isEmpty(password)) {
             UserPassword.setError("Required");
             UserPassword.requestFocus();
-        }
-        else
-        {
+        } else {
             loadingBar.setTitle("Sign In");
             loadingBar.setMessage("Please wait...");
             loadingBar.setCanceledOnTouchOutside(false);
             loadingBar.show();
 
             mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task)
-                {
-                    if (task.isSuccessful())
-                    {
-                        String currentUserID = mAuth.getCurrentUser().getUid();
-                        String deviceToken = FirebaseInstanceId.getInstance().getToken();
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            String currentUserID = mAuth.getCurrentUser().getUid();
+                            String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
-                        UsersRef.child(currentUserID).child("device_token")
-                                .setValue(deviceToken)
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task)
-                                    {
-                                        if (task.isSuccessful())
-                                        {
+                            UsersRef.child(currentUserID).child("device_token")
+                                    .setValue(deviceToken)
+                                    .addOnCompleteListener(task1 -> {
+                                        if (task1.isSuccessful()) {
                                             SendUserToMainActivity();
                                             TastyToast.makeText(getApplicationContext(), "Logged in Successful...", TastyToast.LENGTH_LONG, TastyToast.SUCCESS);
                                             loadingBar.dismiss();
                                         }
-                                    }
-                                });
-                    }
-                    else
-                    {
-                        String message = task.getException().toString();
-                        Toast.makeText(LoginActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
-                        loadingBar.dismiss();
-                    }
-                }
-            });
+                                    });
+                        } else {
+                            String message = task.getException().toString();
+                            Toast.makeText(LoginActivity.this, "Error : " + message, Toast.LENGTH_SHORT).show();
+                            loadingBar.dismiss();
+                        }
+                    });
         }
     }
 
-    private void InitializeFields()
-    {
+    private void InitializeFields() {
         LoginButton = (Button) findViewById(R.id.login_button);
         PhoneLoginButton = (Button) findViewById(R.id.phone_login_button);
         UserEmail = (EditText) findViewById(R.id.login_email);
@@ -167,16 +115,14 @@ public class LoginActivity extends AppCompatActivity
         loadingBar = new ProgressDialog(this);
     }
 
-    private void SendUserToMainActivity()
-    {
+    private void SendUserToMainActivity() {
         Intent mainIntent = new Intent(LoginActivity.this, MainActivity.class);
         mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(mainIntent);
         finish();
     }
 
-    private void SendUserToRegisterActivity()
-    {
+    private void SendUserToRegisterActivity() {
         Intent registerIntent = new Intent(LoginActivity.this, RegisterActivity.class);
         startActivity(registerIntent);
     }

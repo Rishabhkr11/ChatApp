@@ -72,79 +72,70 @@ public class ResetPasswordActivity extends AppCompatActivity {
             }
         });
 
-        resetPasswordBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        resetPasswordBtn.setOnClickListener(v -> {
 
-                TransitionManager.beginDelayedTransition(emailIconContainer);
-                emailIconText.setVisibility(View.GONE);
+            TransitionManager.beginDelayedTransition(emailIconContainer);
+            emailIconText.setVisibility(View.GONE);
 
-                TransitionManager.beginDelayedTransition(emailIconContainer);
-                emailIcon.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
+            TransitionManager.beginDelayedTransition(emailIconContainer);
+            emailIcon.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
 
-                resetPasswordBtn.setEnabled(false);
-                resetPasswordBtn.setTextColor(Color.argb(50, 255, 255, 255));
+            resetPasswordBtn.setEnabled(false);
+            resetPasswordBtn.setTextColor(Color.argb(50, 255, 255, 255));
 
-                mAuth.sendPasswordResetEmail(registeredEmail.getText().toString())
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()){
-                                    ScaleAnimation scaleAnimation = new ScaleAnimation(1,0,1,0,emailIcon.getWidth()/2,emailIcon.getHeight()/2);
-                                    scaleAnimation.setDuration(100);
-                                    scaleAnimation.setInterpolator(new AccelerateInterpolator());
-                                    scaleAnimation.setRepeatMode(Animation.REVERSE);
-                                    scaleAnimation.setRepeatCount(1);
+            mAuth.sendPasswordResetEmail(registeredEmail.getText().toString().trim())
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()){
+                            ScaleAnimation scaleAnimation = new ScaleAnimation(1,0,1,0,emailIcon.getWidth()/2,emailIcon.getHeight()/2);
+                            scaleAnimation.setDuration(100);
+                            scaleAnimation.setInterpolator(new AccelerateInterpolator());
+                            scaleAnimation.setRepeatMode(Animation.REVERSE);
+                            scaleAnimation.setRepeatCount(1);
 
-                                    scaleAnimation.setAnimationListener(new Animation.AnimationListener(){
+                            scaleAnimation.setAnimationListener(new Animation.AnimationListener(){
 
-                                        @Override
-                                        public void onAnimationStart(Animation animation) {
+                                @Override
+                                public void onAnimationStart(Animation animation) {
 
-                                        }
-
-                                        @Override
-                                        public void onAnimationEnd(Animation animation) {
-                                            emailIconText.setText("Recovery email sent successfully! Check your Inbox");
-                                            emailIconText.setTextColor(getResources().getColor(R.color.successGreen));
-                                            emailIconText.setVisibility(View.VISIBLE);
-
-                                            TransitionManager.beginDelayedTransition(emailIconContainer);
-                                            emailIcon.setVisibility(View.VISIBLE);
-                                        }
-
-                                        @Override
-                                        public void onAnimationRepeat(Animation animation) {
-                                            emailIcon.setImageResource(R.drawable.green_email);
-                                        }
-                                    });
-
-                                    emailIcon.startAnimation(scaleAnimation);
                                 }
-                                else {
-                                    String error = task.getException().getMessage();
 
-                                    resetPasswordBtn.setEnabled(true);
-                                    resetPasswordBtn.setTextColor(Color.rgb(255, 255, 255));
-
-                                    emailIconText.setText(error);
-                                    emailIconText.setTextColor(getResources().getColor(R.color.failRed));
-                                    TransitionManager.beginDelayedTransition(emailIconContainer);
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    emailIconText.setText("Recovery email sent successfully! Check your Inbox");
+                                    emailIconText.setTextColor(getResources().getColor(R.color.successGreen));
                                     emailIconText.setVisibility(View.VISIBLE);
+
+                                    TransitionManager.beginDelayedTransition(emailIconContainer);
+                                    emailIcon.setVisibility(View.VISIBLE);
                                 }
-                                progressBar.setVisibility(View.GONE);
-                            }
-                        });
-            }
+
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+                                    emailIcon.setImageResource(R.drawable.green_email);
+                                }
+                            });
+
+                            emailIcon.startAnimation(scaleAnimation);
+                        }
+                        else {
+                            String error = task.getException().getMessage();
+
+                            resetPasswordBtn.setEnabled(true);
+                            resetPasswordBtn.setTextColor(Color.rgb(255, 255, 255));
+
+                            emailIconText.setText(error);
+                            emailIconText.setTextColor(getResources().getColor(R.color.failRed));
+                            TransitionManager.beginDelayedTransition(emailIconContainer);
+                            emailIconText.setVisibility(View.VISIBLE);
+                        }
+                        progressBar.setVisibility(View.GONE);
+                    });
         });
 
-        goBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent resetPasswordLoginIntent = new Intent(ResetPasswordActivity.this, LoginActivity.class);
-                startActivity(resetPasswordLoginIntent);
-            }
+        goBack.setOnClickListener(v -> {
+            Intent resetPasswordLoginIntent = new Intent(ResetPasswordActivity.this, LoginActivity.class);
+            startActivity(resetPasswordLoginIntent);
         });
     }
 
